@@ -125,6 +125,9 @@ exports.Prisma.FlightScalarFieldEnum = {
   departureTime: 'departureTime',
   arrivalTime: 'arrivalTime',
   status: 'status',
+  priority: 'priority',
+  isEmergency: 'isEmergency',
+  groundState: 'groundState',
   gateId: 'gateId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -143,9 +146,8 @@ exports.Prisma.PassengerScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
-  flightId: 'flightId',
-  status: 'status',
   seat: 'seat',
+  flightId: 'flightId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

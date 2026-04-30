@@ -1218,6 +1218,9 @@ export namespace Prisma {
     departureTime: Date | null
     arrivalTime: Date | null
     status: string | null
+    priority: string | null
+    isEmergency: boolean | null
+    groundState: string | null
     gateId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1231,6 +1234,9 @@ export namespace Prisma {
     departureTime: Date | null
     arrivalTime: Date | null
     status: string | null
+    priority: string | null
+    isEmergency: boolean | null
+    groundState: string | null
     gateId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1244,6 +1250,9 @@ export namespace Prisma {
     departureTime: number
     arrivalTime: number
     status: number
+    priority: number
+    isEmergency: number
+    groundState: number
     gateId: number
     createdAt: number
     updatedAt: number
@@ -1259,6 +1268,9 @@ export namespace Prisma {
     departureTime?: true
     arrivalTime?: true
     status?: true
+    priority?: true
+    isEmergency?: true
+    groundState?: true
     gateId?: true
     createdAt?: true
     updatedAt?: true
@@ -1272,6 +1284,9 @@ export namespace Prisma {
     departureTime?: true
     arrivalTime?: true
     status?: true
+    priority?: true
+    isEmergency?: true
+    groundState?: true
     gateId?: true
     createdAt?: true
     updatedAt?: true
@@ -1285,6 +1300,9 @@ export namespace Prisma {
     departureTime?: true
     arrivalTime?: true
     status?: true
+    priority?: true
+    isEmergency?: true
+    groundState?: true
     gateId?: true
     createdAt?: true
     updatedAt?: true
@@ -1371,6 +1389,9 @@ export namespace Prisma {
     departureTime: Date
     arrivalTime: Date
     status: string
+    priority: string
+    isEmergency: boolean
+    groundState: string | null
     gateId: string | null
     createdAt: Date
     updatedAt: Date
@@ -1401,6 +1422,9 @@ export namespace Prisma {
     departureTime?: boolean
     arrivalTime?: boolean
     status?: boolean
+    priority?: boolean
+    isEmergency?: boolean
+    groundState?: boolean
     gateId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1417,6 +1441,9 @@ export namespace Prisma {
     departureTime?: boolean
     arrivalTime?: boolean
     status?: boolean
+    priority?: boolean
+    isEmergency?: boolean
+    groundState?: boolean
     gateId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1431,6 +1458,9 @@ export namespace Prisma {
     departureTime?: boolean
     arrivalTime?: boolean
     status?: boolean
+    priority?: boolean
+    isEmergency?: boolean
+    groundState?: boolean
     gateId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1445,12 +1475,15 @@ export namespace Prisma {
     departureTime?: boolean
     arrivalTime?: boolean
     status?: boolean
+    priority?: boolean
+    isEmergency?: boolean
+    groundState?: boolean
     gateId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FlightOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "number" | "origin" | "destination" | "departureTime" | "arrivalTime" | "status" | "gateId" | "createdAt" | "updatedAt", ExtArgs["result"]["flight"]>
+  export type FlightOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "number" | "origin" | "destination" | "departureTime" | "arrivalTime" | "status" | "priority" | "isEmergency" | "groundState" | "gateId" | "createdAt" | "updatedAt", ExtArgs["result"]["flight"]>
   export type FlightInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     gate?: boolean | Flight$gateArgs<ExtArgs>
     passengers?: boolean | Flight$passengersArgs<ExtArgs>
@@ -1477,6 +1510,9 @@ export namespace Prisma {
       departureTime: Date
       arrivalTime: Date
       status: string
+      priority: string
+      isEmergency: boolean
+      groundState: string | null
       gateId: string | null
       createdAt: Date
       updatedAt: Date
@@ -1912,6 +1948,9 @@ export namespace Prisma {
     readonly departureTime: FieldRef<"Flight", 'DateTime'>
     readonly arrivalTime: FieldRef<"Flight", 'DateTime'>
     readonly status: FieldRef<"Flight", 'String'>
+    readonly priority: FieldRef<"Flight", 'String'>
+    readonly isEmergency: FieldRef<"Flight", 'Boolean'>
+    readonly groundState: FieldRef<"Flight", 'String'>
     readonly gateId: FieldRef<"Flight", 'String'>
     readonly createdAt: FieldRef<"Flight", 'DateTime'>
     readonly updatedAt: FieldRef<"Flight", 'DateTime'>
@@ -3475,9 +3514,8 @@ export namespace Prisma {
     id: string | null
     name: string | null
     email: string | null
-    flightId: string | null
-    status: string | null
     seat: string | null
+    flightId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3486,9 +3524,8 @@ export namespace Prisma {
     id: string | null
     name: string | null
     email: string | null
-    flightId: string | null
-    status: string | null
     seat: string | null
+    flightId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3497,9 +3534,8 @@ export namespace Prisma {
     id: number
     name: number
     email: number
-    flightId: number
-    status: number
     seat: number
+    flightId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3510,9 +3546,8 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
-    flightId?: true
-    status?: true
     seat?: true
+    flightId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3521,9 +3556,8 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
-    flightId?: true
-    status?: true
     seat?: true
+    flightId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3532,9 +3566,8 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
-    flightId?: true
-    status?: true
     seat?: true
+    flightId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3615,10 +3648,9 @@ export namespace Prisma {
   export type PassengerGroupByOutputType = {
     id: string
     name: string
-    email: string | null
-    flightId: string
-    status: string
+    email: string
     seat: string | null
+    flightId: string
     createdAt: Date
     updatedAt: Date
     _count: PassengerCountAggregateOutputType | null
@@ -3644,9 +3676,8 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
-    flightId?: boolean
-    status?: boolean
     seat?: boolean
+    flightId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     flight?: boolean | FlightDefaultArgs<ExtArgs>
@@ -3656,9 +3687,8 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
-    flightId?: boolean
-    status?: boolean
     seat?: boolean
+    flightId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     flight?: boolean | FlightDefaultArgs<ExtArgs>
@@ -3668,9 +3698,8 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
-    flightId?: boolean
-    status?: boolean
     seat?: boolean
+    flightId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     flight?: boolean | FlightDefaultArgs<ExtArgs>
@@ -3680,14 +3709,13 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
-    flightId?: boolean
-    status?: boolean
     seat?: boolean
+    flightId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PassengerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "flightId" | "status" | "seat" | "createdAt" | "updatedAt", ExtArgs["result"]["passenger"]>
+  export type PassengerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "seat" | "flightId" | "createdAt" | "updatedAt", ExtArgs["result"]["passenger"]>
   export type PassengerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     flight?: boolean | FlightDefaultArgs<ExtArgs>
   }
@@ -3706,10 +3734,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      email: string | null
-      flightId: string
-      status: string
+      email: string
       seat: string | null
+      flightId: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["passenger"]>
@@ -4139,9 +4166,8 @@ export namespace Prisma {
     readonly id: FieldRef<"Passenger", 'String'>
     readonly name: FieldRef<"Passenger", 'String'>
     readonly email: FieldRef<"Passenger", 'String'>
-    readonly flightId: FieldRef<"Passenger", 'String'>
-    readonly status: FieldRef<"Passenger", 'String'>
     readonly seat: FieldRef<"Passenger", 'String'>
+    readonly flightId: FieldRef<"Passenger", 'String'>
     readonly createdAt: FieldRef<"Passenger", 'DateTime'>
     readonly updatedAt: FieldRef<"Passenger", 'DateTime'>
   }
@@ -5591,6 +5617,9 @@ export namespace Prisma {
     departureTime: 'departureTime',
     arrivalTime: 'arrivalTime',
     status: 'status',
+    priority: 'priority',
+    isEmergency: 'isEmergency',
+    groundState: 'groundState',
     gateId: 'gateId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -5615,9 +5644,8 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     email: 'email',
-    flightId: 'flightId',
-    status: 'status',
     seat: 'seat',
+    flightId: 'flightId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -5673,6 +5701,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -5693,6 +5728,9 @@ export namespace Prisma {
     departureTime?: DateTimeFilter<"Flight"> | Date | string
     arrivalTime?: DateTimeFilter<"Flight"> | Date | string
     status?: StringFilter<"Flight"> | string
+    priority?: StringFilter<"Flight"> | string
+    isEmergency?: BoolFilter<"Flight"> | boolean
+    groundState?: StringNullableFilter<"Flight"> | string | null
     gateId?: StringNullableFilter<"Flight"> | string | null
     createdAt?: DateTimeFilter<"Flight"> | Date | string
     updatedAt?: DateTimeFilter<"Flight"> | Date | string
@@ -5708,6 +5746,9 @@ export namespace Prisma {
     departureTime?: SortOrder
     arrivalTime?: SortOrder
     status?: SortOrder
+    priority?: SortOrder
+    isEmergency?: SortOrder
+    groundState?: SortOrderInput | SortOrder
     gateId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -5726,6 +5767,9 @@ export namespace Prisma {
     departureTime?: DateTimeFilter<"Flight"> | Date | string
     arrivalTime?: DateTimeFilter<"Flight"> | Date | string
     status?: StringFilter<"Flight"> | string
+    priority?: StringFilter<"Flight"> | string
+    isEmergency?: BoolFilter<"Flight"> | boolean
+    groundState?: StringNullableFilter<"Flight"> | string | null
     gateId?: StringNullableFilter<"Flight"> | string | null
     createdAt?: DateTimeFilter<"Flight"> | Date | string
     updatedAt?: DateTimeFilter<"Flight"> | Date | string
@@ -5741,6 +5785,9 @@ export namespace Prisma {
     departureTime?: SortOrder
     arrivalTime?: SortOrder
     status?: SortOrder
+    priority?: SortOrder
+    isEmergency?: SortOrder
+    groundState?: SortOrderInput | SortOrder
     gateId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -5760,6 +5807,9 @@ export namespace Prisma {
     departureTime?: DateTimeWithAggregatesFilter<"Flight"> | Date | string
     arrivalTime?: DateTimeWithAggregatesFilter<"Flight"> | Date | string
     status?: StringWithAggregatesFilter<"Flight"> | string
+    priority?: StringWithAggregatesFilter<"Flight"> | string
+    isEmergency?: BoolWithAggregatesFilter<"Flight"> | boolean
+    groundState?: StringNullableWithAggregatesFilter<"Flight"> | string | null
     gateId?: StringNullableWithAggregatesFilter<"Flight"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Flight"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Flight"> | Date | string
@@ -5831,10 +5881,9 @@ export namespace Prisma {
     NOT?: PassengerWhereInput | PassengerWhereInput[]
     id?: StringFilter<"Passenger"> | string
     name?: StringFilter<"Passenger"> | string
-    email?: StringNullableFilter<"Passenger"> | string | null
-    flightId?: StringFilter<"Passenger"> | string
-    status?: StringFilter<"Passenger"> | string
+    email?: StringFilter<"Passenger"> | string
     seat?: StringNullableFilter<"Passenger"> | string | null
+    flightId?: StringFilter<"Passenger"> | string
     createdAt?: DateTimeFilter<"Passenger"> | Date | string
     updatedAt?: DateTimeFilter<"Passenger"> | Date | string
     flight?: XOR<FlightScalarRelationFilter, FlightWhereInput>
@@ -5843,10 +5892,9 @@ export namespace Prisma {
   export type PassengerOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    email?: SortOrderInput | SortOrder
-    flightId?: SortOrder
-    status?: SortOrder
+    email?: SortOrder
     seat?: SortOrderInput | SortOrder
+    flightId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     flight?: FlightOrderByWithRelationInput
@@ -5854,26 +5902,24 @@ export namespace Prisma {
 
   export type PassengerWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    email?: string
     AND?: PassengerWhereInput | PassengerWhereInput[]
     OR?: PassengerWhereInput[]
     NOT?: PassengerWhereInput | PassengerWhereInput[]
     name?: StringFilter<"Passenger"> | string
-    email?: StringNullableFilter<"Passenger"> | string | null
-    flightId?: StringFilter<"Passenger"> | string
-    status?: StringFilter<"Passenger"> | string
     seat?: StringNullableFilter<"Passenger"> | string | null
+    flightId?: StringFilter<"Passenger"> | string
     createdAt?: DateTimeFilter<"Passenger"> | Date | string
     updatedAt?: DateTimeFilter<"Passenger"> | Date | string
     flight?: XOR<FlightScalarRelationFilter, FlightWhereInput>
-  }, "id">
+  }, "id" | "email">
 
   export type PassengerOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    email?: SortOrderInput | SortOrder
-    flightId?: SortOrder
-    status?: SortOrder
+    email?: SortOrder
     seat?: SortOrderInput | SortOrder
+    flightId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PassengerCountOrderByAggregateInput
@@ -5887,10 +5933,9 @@ export namespace Prisma {
     NOT?: PassengerScalarWhereWithAggregatesInput | PassengerScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Passenger"> | string
     name?: StringWithAggregatesFilter<"Passenger"> | string
-    email?: StringNullableWithAggregatesFilter<"Passenger"> | string | null
-    flightId?: StringWithAggregatesFilter<"Passenger"> | string
-    status?: StringWithAggregatesFilter<"Passenger"> | string
+    email?: StringWithAggregatesFilter<"Passenger"> | string
     seat?: StringNullableWithAggregatesFilter<"Passenger"> | string | null
+    flightId?: StringWithAggregatesFilter<"Passenger"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Passenger"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Passenger"> | Date | string
   }
@@ -5959,7 +6004,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     gate?: GateCreateNestedOneWithoutFlightsInput
@@ -5973,7 +6021,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     gateId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -5988,6 +6039,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gate?: GateUpdateOneWithoutFlightsNestedInput
@@ -6002,6 +6056,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     gateId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6015,7 +6072,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     gateId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6029,6 +6089,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6041,6 +6104,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     gateId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6050,7 +6116,7 @@ export namespace Prisma {
     id?: string
     name: string
     terminal: string
-    status: string
+    status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     flights?: FlightCreateNestedManyWithoutGateInput
@@ -6060,7 +6126,7 @@ export namespace Prisma {
     id?: string
     name: string
     terminal: string
-    status: string
+    status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     flights?: FlightUncheckedCreateNestedManyWithoutGateInput
@@ -6090,7 +6156,7 @@ export namespace Prisma {
     id?: string
     name: string
     terminal: string
-    status: string
+    status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6116,8 +6182,7 @@ export namespace Prisma {
   export type PassengerCreateInput = {
     id?: string
     name: string
-    email?: string | null
-    status: string
+    email: string
     seat?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6127,10 +6192,9 @@ export namespace Prisma {
   export type PassengerUncheckedCreateInput = {
     id?: string
     name: string
-    email?: string | null
-    flightId: string
-    status: string
+    email: string
     seat?: string | null
+    flightId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6138,8 +6202,7 @@ export namespace Prisma {
   export type PassengerUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6149,10 +6212,9 @@ export namespace Prisma {
   export type PassengerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    flightId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
+    flightId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6160,10 +6222,9 @@ export namespace Prisma {
   export type PassengerCreateManyInput = {
     id?: string
     name: string
-    email?: string | null
-    flightId: string
-    status: string
+    email: string
     seat?: string | null
+    flightId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6171,8 +6232,7 @@ export namespace Prisma {
   export type PassengerUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6181,10 +6241,9 @@ export namespace Prisma {
   export type PassengerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    flightId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
+    flightId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6277,6 +6336,11 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -6319,6 +6383,9 @@ export namespace Prisma {
     departureTime?: SortOrder
     arrivalTime?: SortOrder
     status?: SortOrder
+    priority?: SortOrder
+    isEmergency?: SortOrder
+    groundState?: SortOrder
     gateId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6332,6 +6399,9 @@ export namespace Prisma {
     departureTime?: SortOrder
     arrivalTime?: SortOrder
     status?: SortOrder
+    priority?: SortOrder
+    isEmergency?: SortOrder
+    groundState?: SortOrder
     gateId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6345,6 +6415,9 @@ export namespace Prisma {
     departureTime?: SortOrder
     arrivalTime?: SortOrder
     status?: SortOrder
+    priority?: SortOrder
+    isEmergency?: SortOrder
+    groundState?: SortOrder
     gateId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6379,6 +6452,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6444,9 +6525,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
-    flightId?: SortOrder
-    status?: SortOrder
     seat?: SortOrder
+    flightId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6455,9 +6535,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
-    flightId?: SortOrder
-    status?: SortOrder
     seat?: SortOrder
+    flightId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6466,9 +6545,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
-    flightId?: SortOrder
-    status?: SortOrder
     seat?: SortOrder
+    flightId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6528,6 +6606,14 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type GateUpdateOneWithoutFlightsNestedInput = {
     create?: XOR<GateCreateWithoutFlightsInput, GateUncheckedCreateWithoutFlightsInput>
     connectOrCreate?: GateCreateOrConnectWithoutFlightsInput
@@ -6550,10 +6636,6 @@ export namespace Prisma {
     update?: PassengerUpdateWithWhereUniqueWithoutFlightInput | PassengerUpdateWithWhereUniqueWithoutFlightInput[]
     updateMany?: PassengerUpdateManyWithWhereWithoutFlightInput | PassengerUpdateManyWithWhereWithoutFlightInput[]
     deleteMany?: PassengerScalarWhereInput | PassengerScalarWhereInput[]
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type PassengerUncheckedUpdateManyWithoutFlightNestedInput = {
@@ -6651,6 +6733,11 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -6707,6 +6794,14 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -6739,7 +6834,7 @@ export namespace Prisma {
     id?: string
     name: string
     terminal: string
-    status: string
+    status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6748,7 +6843,7 @@ export namespace Prisma {
     id?: string
     name: string
     terminal: string
-    status: string
+    status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6761,8 +6856,7 @@ export namespace Prisma {
   export type PassengerCreateWithoutFlightInput = {
     id?: string
     name: string
-    email?: string | null
-    status: string
+    email: string
     seat?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6771,8 +6865,7 @@ export namespace Prisma {
   export type PassengerUncheckedCreateWithoutFlightInput = {
     id?: string
     name: string
-    email?: string | null
-    status: string
+    email: string
     seat?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6838,10 +6931,9 @@ export namespace Prisma {
     NOT?: PassengerScalarWhereInput | PassengerScalarWhereInput[]
     id?: StringFilter<"Passenger"> | string
     name?: StringFilter<"Passenger"> | string
-    email?: StringNullableFilter<"Passenger"> | string | null
-    flightId?: StringFilter<"Passenger"> | string
-    status?: StringFilter<"Passenger"> | string
+    email?: StringFilter<"Passenger"> | string
     seat?: StringNullableFilter<"Passenger"> | string | null
+    flightId?: StringFilter<"Passenger"> | string
     createdAt?: DateTimeFilter<"Passenger"> | Date | string
     updatedAt?: DateTimeFilter<"Passenger"> | Date | string
   }
@@ -6853,7 +6945,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     passengers?: PassengerCreateNestedManyWithoutFlightInput
@@ -6866,7 +6961,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     passengers?: PassengerUncheckedCreateNestedManyWithoutFlightInput
@@ -6908,6 +7006,9 @@ export namespace Prisma {
     departureTime?: DateTimeFilter<"Flight"> | Date | string
     arrivalTime?: DateTimeFilter<"Flight"> | Date | string
     status?: StringFilter<"Flight"> | string
+    priority?: StringFilter<"Flight"> | string
+    isEmergency?: BoolFilter<"Flight"> | boolean
+    groundState?: StringNullableFilter<"Flight"> | string | null
     gateId?: StringNullableFilter<"Flight"> | string | null
     createdAt?: DateTimeFilter<"Flight"> | Date | string
     updatedAt?: DateTimeFilter<"Flight"> | Date | string
@@ -6920,7 +7021,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     gate?: GateCreateNestedOneWithoutFlightsInput
@@ -6933,7 +7037,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     gateId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6963,6 +7070,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gate?: GateUpdateOneWithoutFlightsNestedInput
@@ -6976,6 +7086,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     gateId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6984,8 +7097,7 @@ export namespace Prisma {
   export type PassengerCreateManyFlightInput = {
     id?: string
     name: string
-    email?: string | null
-    status: string
+    email: string
     seat?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6994,8 +7106,7 @@ export namespace Prisma {
   export type PassengerUpdateWithoutFlightInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7004,8 +7115,7 @@ export namespace Prisma {
   export type PassengerUncheckedUpdateWithoutFlightInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7014,8 +7124,7 @@ export namespace Prisma {
   export type PassengerUncheckedUpdateManyWithoutFlightInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
     seat?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7028,7 +7137,10 @@ export namespace Prisma {
     destination: string
     departureTime: Date | string
     arrivalTime: Date | string
-    status: string
+    status?: string
+    priority?: string
+    isEmergency?: boolean
+    groundState?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -7041,6 +7153,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     passengers?: PassengerUpdateManyWithoutFlightNestedInput
@@ -7054,6 +7169,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     passengers?: PassengerUncheckedUpdateManyWithoutFlightNestedInput
@@ -7067,6 +7185,9 @@ export namespace Prisma {
     departureTime?: DateTimeFieldUpdateOperationsInput | Date | string
     arrivalTime?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    isEmergency?: BoolFieldUpdateOperationsInput | boolean
+    groundState?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

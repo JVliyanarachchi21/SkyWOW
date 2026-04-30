@@ -10,10 +10,10 @@ To move beyond a "basic crud," we define actors with specific data-driven goals:
 
 | Actor | Role | Objective |
 | :--- | :--- | :--- |
-| **Airport Manager (Admin)** | Human | High-level decision making and system overrides. |
-| **Ground Staff / Pilot** | Field | Update real-time status (Ready to Pushback, Boarding Complete). |
-| **AI Dispatcher** | System | Automated optimization of gates and resources using Gemini Pro. |
-| **Passenger (Guest)** | End-User | View real-time flight boards and "Smart-Gate" assignments. |
+| **Airport Manager (Admin)** | Human Authority | Overrides AI, handles emergencies, and sets VIP priorities. **"The Strategic Mind."** |
+| **Ground Staff / Pilot** | Source of Truth | Updates real-time state changes (Boarding, Pushback). **"The Pulse of the Airport."** |
+| **AI Dispatcher** | Background Brain | Constantly re-evaluates assignments, congestion, and delays. **"The Proactive Optimizer."** |
+| **Passenger (User)** | Active Consumer | Interacts with smart gate changes and AI-recommended arrival times. **"The Informed Traveler."** |
 
 ---
 
@@ -28,12 +28,27 @@ We focus on **Intelligence** over just "Reporting."
     *   **Process:** AI heuristic matches flight requirements to Gate capabilities.
     *   **Output:** An optimized "Execution Plan" on the Dashboard.
 
-### B. Predictive Turnaround Monitoring (PTM)
-*   **Innovation:** Real-time countdowns that alert when a flight is lagging behind its "Target Off-Block Time" (TOBT).
-*   **Output:** Visual "Warning" pulses on the dashboard when a delay is predicted.
+### B. The "Always Thinking" Dispatch Loop
+*   **Innovation:** Unlike reactive systems, SkyWOW's AI runs in the background. It doesn't wait for a click; it monitors the ground truth and suggests shifts before delays happen.
+*   **Interaction:** If Ground Staff reports a delay, the AI instantly triggers a "Gate Cascade" to prevent follow-up conflicts.
 
-### C. Resource Congestion Analytics
-*   **Innovation:** A heat-map simulation of gate occupancy over a 24-hour period.
+### C. Emergency & Priority Override
+*   **Innovation:** A dedicated "Emergency Protocol" for Managers. When active, the AI yields all resources to the emergency flight, recalculating the entire airport's schedule in seconds.
+
+---
+
+## 🔄 3. The Dynamic Flight Lifecycle (The "How")
+A flight in SkyWOW is not a static row in a database; it is a living entity with 9 critical states:
+
+1.  **SCHEDULED**: Initial plan.
+2.  **AI_OPTIMIZING**: AI is scanning for the most efficient gate.
+3.  **ASSIGNED**: Gate is locked (AI or Manager).
+4.  **IN_FLIGHT**: Approaching Sky Hub.
+5.  **LANDED**: ATC confirmation (Ground Truth start).
+6.  **DOCKING**: Real-time gate occupancy start.
+7.  **BOARDING**: Ground staff state update.
+8.  **READY_PUSHBACK**: Pilot state update.
+9.  **DEPARTED**: Off the gate, resource released.
 
 ---
 

@@ -3,49 +3,73 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import fs from 'fs';
 
 async function main() {
-  console.log('🌱 Starting seed (Prisma 7 PrismaBetterSqlite3 Factory)...');
+  console.log('🌱 Starting Dynamic Seed (SkyWOW v2)...');
   
-  // Setup the driver adapter factory for Prisma 7
   const adapterFactory = new PrismaBetterSqlite3({ url: 'C:/Users/USER/.gemini/antigravity/scratch/skywow-app/dev.db' });
-  
-  // In Prisma 7, we pass the factory directly to the client
-  // @ts-ignore - Prisma types might be evolving
   const prisma = new PrismaClient({ adapter: adapterFactory });
 
   try {
-    // 1. Create Gates
+    // 1. Create Gates with Advanced Status
     const gates = await Promise.all([
       prisma.gate.upsert({
         where: { name: 'A101' },
         update: {},
-        create: { name: 'A101', terminal: 'TERMINAL 1', status: 'OPEN' },
+        create: { name: 'A101', terminal: 'T1', status: 'OPEN' },
       }),
       prisma.gate.upsert({
         where: { name: 'B202' },
         update: {},
-        create: { name: 'B202', terminal: 'TERMINAL 2', status: 'OPEN' },
+        create: { name: 'B202', terminal: 'T2', status: 'OPEN' },
       }),
       prisma.gate.upsert({
         where: { name: 'C303' },
         update: {},
-        create: { name: 'C303', terminal: 'TERMINAL 3', status: 'MAINTENANCE' },
+        create: { name: 'C303', terminal: 'T3', status: 'MAINTENANCE' },
+      }),
+      prisma.gate.upsert({
+        where: { name: 'E999' },
+        update: {},
+        create: { name: 'E999', terminal: 'T-VIP', status: 'EMERGENCY_ONLY' },
       }),
     ]);
 
-    // 2. Create Flights
+    // 2. Create Dynamic Flights
     const flightData = [
-      { number: 'SW102', origin: 'LONDON (LHR)', destination: 'SKY_HUB', status: 'ON TIME', gateId: gates[0].id },
-      { number: 'SW245', origin: 'SKY_HUB', destination: 'TOKYO (HND)', status: 'BOARDING', gateId: gates[1].id },
-      { number: 'SW981', origin: 'NEW YORK (JFK)', destination: 'SKY_HUB', status: 'DELAYED', gateId: null },
+      { 
+        number: 'SW102', origin: 'LONDON', destination: 'SKY_HUB', 
+        status: 'BOARDING', groundState: 'BOARDING', priority: 'NORMAL',
+        gateId: gates[0].id 
+      },
+      { 
+        number: 'SW777', origin: 'SINGAPORE', destination: 'SKY_HUB', 
+        status: 'IN_FLIGHT', priority: 'VIP',
+        gateId: gates[1].id 
+      },
+      { 
+        number: 'SW911', origin: 'TOKYO', destination: 'SKY_HUB', 
+        status: 'LANDED', priority: 'EMERGENCY', isEmergency: true,
+        gateId: null 
+      },
+      { 
+        number: 'SW001', origin: 'NEW YORK', destination: 'SKY_HUB', 
+        status: 'AI_OPTIMIZING', priority: 'NORMAL',
+        gateId: null 
+      },
     ];
 
     for (const f of flightData) {
       await prisma.flight.upsert({
         where: { number: f.number },
-        update: {},
+        update: {
+          status: f.status,
+          priority: f.priority,
+          isEmergency: f.isEmergency || false,
+          groundState: f.groundState || null,
+          gateId: f.gateId
+        },
         create: {
           ...f,
-          departureTime: new Date(Date.now() + 3600000), // Mocking dates
+          departureTime: new Date(Date.now() + 3600000),
           arrivalTime: new Date(Date.now() + 18000000),
         },
       });
@@ -55,7 +79,7 @@ async function main() {
     const staffData = [
       { name: 'Janithi Liyanaarachchi', role: 'ADMIN', email: 'janithi@skywow.com' },
       { name: 'Alex Thompson', role: 'GROUND_CREW', email: 'alex@skywow.com' },
-      { name: 'Captain Sarah', role: 'PILOT', email: 'sarah@skywow.com' },
+      { name: 'Commander Sky', role: 'PILOT', email: 'pilot@skywow.com' },
     ];
 
     for (const s of staffData) {
@@ -66,7 +90,7 @@ async function main() {
       });
     }
 
-    console.log('✅ Seed finished successfully!');
+    console.log('✅ Dynamic Seed finished successfully!');
   } finally {
     await prisma.$disconnect();
   }

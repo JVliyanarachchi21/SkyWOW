@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/client"
@@ -11,46 +8,59 @@ datasource db {
 }
 
 model Flight {
-  id            String      @id @default(cuid())
-  number        String      @unique
+  id            String   @id @default(uuid())
+  number        String   @unique
   origin        String
   destination   String
   departureTime DateTime
   arrivalTime   DateTime
-  status        String // SCHEDULED, BOARDING, DEPARTED, DELAYED, LANDED
-  gateId        String?
-  gate          Gate?       @relation(fields: [gateId], references: [id])
-  passengers    Passenger[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+
+  // Advanced Lifecycle States
+  status String @default("SCHEDULED") // SCHEDULED, AI_OPTIMIZING, ASSIGNED, IN_FLIGHT, LANDED, DOCKING, BOARDING, READY_PUSHBACK, DEPARTED
+
+  // Intelligence & Authority
+  priority    String  @default("NORMAL") // NORMAL, VIP, EMERGENCY
+  isEmergency Boolean @default(false)
+
+  // Ground Truth (Source of Truth)
+  groundState String? // CLEANING, REFUELING, BOARDING, COMPLETE
+
+  gateId String?
+  gate   Gate?   @relation(fields: [gateId], references: [id])
+
+  passengers Passenger[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
 
 model Gate {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  terminal  String
-  status    String // OPEN, CLOSED, MAINTENANCE
+  id       String @id @default(uuid())
+  name     String @unique
+  terminal String
+  status   String @default("OPEN") // OPEN, CLOSED, MAINTENANCE, EMERGENCY_ONLY
+
   flights   Flight[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Passenger {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  flightId  String
-  flight    Flight   @relation(fields: [flightId], references: [id])
-  status    String // CHECKED_IN, SECURITY_CLEARED, BOARDED
-  seat      String?
+  id    String  @id @default(uuid())
+  name  String
+  email String  @unique
+  seat  String?
+
+  flightId String
+  flight   Flight @relation(fields: [flightId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Staff {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   name      String
-  role      String // ADMIN, GROUND_CREW, PILOT, SECURITY
+  role      String // ADMIN, PILOT, GROUND_CREW, AI_OPERATOR
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
