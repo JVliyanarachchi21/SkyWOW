@@ -1,0 +1,24 @@
+❌ SEED ERROR: PrismaClientKnownRequestError: 
+Invalid `prisma.gate.upsert()` invocation in
+C:\Users\USER\.gemini\antigravity\scratch\skywow-app\prisma\seed.ts:18:19
+
+  15 try {
+  16   // 1. Create Gates
+  17   const gates = await Promise.all([
+→ 18     prisma.gate.upsert(
+The table `main.Gate` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.gate.upsert()` invocation in
+C:\Users\USER\.gemini\antigravity\scratch\skywow-app\prisma\seed.ts:18:19
+
+  15 try {
+  16   // 1. Create Gates
+  17   const gates = await Promise.all([
+→ 18     prisma.gate.upsert(
+The table `main.Gate` does not exist in the current database.
+    at zr.handleRequestError (C:\Users\USER\.gemini\antigravity\scratch\skywow-app\src\generated\client\runtime\client.js:69:8286)
+    at zr.handleAndLogRequestError (C:\Users\USER\.gemini\antigravity\scratch\skywow-app\src\generated\client\runtime\client.js:69:7581)
+    at zr.request (C:\Users\USER\.gemini\antigravity\scratch\skywow-app\src\generated\client\runtime\client.js:69:7288)
+    at async a (C:\Users\USER\.gemini\antigravity\scratch\skywow-app\src\generated\client\runtime\client.js:79:6862)
+    at async Promise.all (index 0)
+    at async main (C:\Users\USER\.gemini\antigravity\scratch\skywow-app\prisma\seed.ts:17:19)

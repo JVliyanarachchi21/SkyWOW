@@ -17,7 +17,7 @@ model Flight {
   destination   String
   departureTime DateTime
   arrivalTime   DateTime
-  status        String      // SCHEDULED, BOARDING, DEPARTED, DELAYED, LANDED
+  status        String // SCHEDULED, BOARDING, DEPARTED, DELAYED, LANDED
   gateId        String?
   gate          Gate?       @relation(fields: [gateId], references: [id])
   passengers    Passenger[]
@@ -29,7 +29,7 @@ model Gate {
   id        String   @id @default(cuid())
   name      String   @unique
   terminal  String
-  status    String   // OPEN, CLOSED, MAINTENANCE
+  status    String // OPEN, CLOSED, MAINTENANCE
   flights   Flight[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,7 +41,7 @@ model Passenger {
   email     String?
   flightId  String
   flight    Flight   @relation(fields: [flightId], references: [id])
-  status    String   // CHECKED_IN, SECURITY_CLEARED, BOARDED
+  status    String // CHECKED_IN, SECURITY_CLEARED, BOARDED
   seat      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,7 +50,7 @@ model Passenger {
 model Staff {
   id        String   @id @default(cuid())
   name      String
-  role      String   // ADMIN, GROUND_CREW, PILOT, SECURITY
+  role      String // ADMIN, GROUND_CREW, PILOT, SECURITY
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
