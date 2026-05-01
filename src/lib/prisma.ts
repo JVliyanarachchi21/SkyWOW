@@ -1,5 +1,7 @@
-import { PrismaClient } from '../generated/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import "dotenv/config";
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient | undefined;
@@ -10,14 +12,9 @@ const getPrismaClient = () => {
     return globalForPrisma.prisma;
   }
 
-  // Setup the driver adapter factory for Prisma 7
-  // Note: Using absolute path for consistency
-  const adapterFactory = new PrismaBetterSqlite3({ 
-    url: 'C:/Users/USER/.gemini/antigravity/scratch/skywow-app/dev.db' 
-  });
-  
-  // @ts-ignore
-  const prisma = new PrismaClient({ adapter: adapterFactory });
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
   
   if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma;
