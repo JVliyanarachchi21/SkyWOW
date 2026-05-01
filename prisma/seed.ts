@@ -1,58 +1,55 @@
-import { PrismaClient } from '../src/generated/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import fs from 'fs';
+import { prisma } from '../src/lib/prisma';
+import { 
+  FlightStatus, 
+  PriorityLevel, 
+  GroundState, 
+  GateStatus,
+  GateSize,
+  GateType
+} from '@prisma/client';
 
 async function main() {
   console.log('🌱 Starting Dynamic Seed (SkyWOW v2)...');
   
-  const adapterFactory = new PrismaBetterSqlite3({ url: 'C:/Users/USER/.gemini/antigravity/scratch/skywow-app/dev.db' });
-  const prisma = new PrismaClient({ adapter: adapterFactory });
-
   try {
     // 1. Create Gates with Advanced Status
-    const gates = await Promise.all([
-      prisma.gate.upsert({
-        where: { name: 'A101' },
-        update: {},
-        create: { name: 'A101', terminal: 'T1', status: 'OPEN' },
-      }),
-      prisma.gate.upsert({
-        where: { name: 'B202' },
-        update: {},
-        create: { name: 'B202', terminal: 'T2', status: 'OPEN' },
-      }),
-      prisma.gate.upsert({
-        where: { name: 'C303' },
-        update: {},
-        create: { name: 'C303', terminal: 'T3', status: 'MAINTENANCE' },
-      }),
-      prisma.gate.upsert({
-        where: { name: 'E999' },
-        update: {},
-        create: { name: 'E999', terminal: 'T-VIP', status: 'EMERGENCY_ONLY' },
-      }),
-    ]);
+    const gateData = [
+      { name: 'A101', terminal: 'T1', zone: 'NORTH', status: GateStatus.OPEN, size: GateSize.MEDIUM, mapX: 150, mapY: 200, taxiTime: 3 },
+      { name: 'B202', terminal: 'T1', zone: 'NORTH', status: GateStatus.OPEN, size: GateSize.MEDIUM, mapX: 325, mapY: 200, taxiTime: 4 },
+      { name: 'C303', terminal: 'T1', zone: 'SOUTH', status: GateStatus.MAINTENANCE, size: GateSize.MEDIUM, mapX: 325, mapY: 400, taxiTime: 6 },
+      { name: 'E999', terminal: 'T1', zone: 'INTERNATIONAL', status: GateStatus.EMERGENCY_ONLY, size: GateSize.HEAVY, mapX: 850, mapY: 300, taxiTime: 12 },
+    ];
+
+    const gates = [];
+    for (const g of gateData) {
+      const gate = await prisma.gate.upsert({
+        where: { name: g.name },
+        update: g as any,
+        create: g as any,
+      });
+      gates.push(gate);
+    }
 
     // 2. Create Dynamic Flights
     const flightData = [
       { 
-        number: 'SW102', origin: 'LONDON', destination: 'SKY_HUB', 
-        status: 'BOARDING', groundState: 'BOARDING', priority: 'NORMAL',
+        number: 'SW102', airline: 'SkyLink', aircraftType: 'Boeing 737', origin: 'LONDON', destination: 'SKY_HUB', 
+        status: FlightStatus.BOARDING, groundState: GroundState.BOARDING, priority: PriorityLevel.NORMAL,
         gateId: gates[0].id 
       },
       { 
-        number: 'SW777', origin: 'SINGAPORE', destination: 'SKY_HUB', 
-        status: 'IN_FLIGHT', priority: 'VIP',
+        number: 'SW777', airline: 'SkyLink', aircraftType: 'Boeing 777', origin: 'SINGAPORE', destination: 'SKY_HUB', 
+        status: FlightStatus.IN_FLIGHT, priority: PriorityLevel.VIP,
         gateId: gates[1].id 
       },
       { 
-        number: 'SW911', origin: 'TOKYO', destination: 'SKY_HUB', 
-        status: 'LANDED', priority: 'EMERGENCY', isEmergency: true,
+        number: 'SW911', airline: 'SkyLink', aircraftType: 'Boeing 777', origin: 'TOKYO', destination: 'SKY_HUB', 
+        status: FlightStatus.LANDED, priority: PriorityLevel.EMERGENCY, isEmergency: true,
         gateId: null 
       },
       { 
-        number: 'SW001', origin: 'NEW YORK', destination: 'SKY_HUB', 
-        status: 'AI_OPTIMIZING', priority: 'NORMAL',
+        number: 'SW001', airline: 'SkyLink', aircraftType: 'Boeing 737', origin: 'NEW YORK', destination: 'SKY_HUB', 
+        status: FlightStatus.AI_OPTIMIZING, priority: PriorityLevel.NORMAL,
         gateId: null 
       },
     ];
@@ -98,7 +95,6 @@ async function main() {
 
 main()
   .catch((e) => {
-    const errorLog = `❌ SEED ERROR: ${e}\nStack: ${e.stack}\n`;
-    fs.writeFileSync('./prisma/seed_error_internal.log', errorLog);
+    console.error('❌ SEED ERROR:', e);
     process.exit(1);
   });
