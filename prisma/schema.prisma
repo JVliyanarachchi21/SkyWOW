@@ -1,47 +1,169 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  engineType = "library"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+enum FlightStatus {
+  SCHEDULED
+  AI_OPTIMIZING
+  ASSIGNED
+  BOARDING
+  READY_PUSHBACK
+  IN_FLIGHT
+  LANDED
+  DOCKING
+  DEPARTED
+}
+
+enum PriorityLevel {
+  NORMAL
+  VIP
+  EMERGENCY
+}
+
+enum GroundState {
+  CLEANING
+  REFUELING
+  BOARDING
+  COMPLETE
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  EXPIRED
+  REJECTED
+}
+
+enum GateStatus {
+  OPEN
+  CLOSED
+  MAINTENANCE
+  EMERGENCY_ONLY
+}
+
+enum GateType {
+  DOMESTIC
+  INTERNATIONAL
+  CARGO
+}
+
+enum GateSize {
+  SMALL
+  MEDIUM
+  LARGE
+  HEAVY
 }
 
 model Flight {
   id            String   @id @default(uuid())
   number        String   @unique
+  airline       String   @default("SkyLink")
+  aircraftType  String   @default("Boeing 737")
   origin        String
   destination   String
   departureTime DateTime
   arrivalTime   DateTime
   
   // Advanced Lifecycle States
-  status        String   @default("SCHEDULED") // SCHEDULED, AI_OPTIMIZING, ASSIGNED, IN_FLIGHT, LANDED, DOCKING, BOARDING, READY_PUSHBACK, DEPARTED
+  status        FlightStatus   @default(SCHEDULED)
   
   // Intelligence & Authority
-  priority      String   @default("NORMAL")    // NORMAL, VIP, EMERGENCY
-  isEmergency   Boolean  @default(false)
+  priority      PriorityLevel  @default(NORMAL)
+  isEmergency   Boolean        @default(false)
+  impactScore   Int            @default(10)          // 0-100 score for AI prioritization
+  
+  // Temporal Awareness
+  lastOptimizedAt DateTime?
   
   // Ground Truth (Source of Truth)
-  groundState   String?                        // CLEANING, REFUELING, BOARDING, COMPLETE
+  groundState   GroundState?
   
   gateId        String?
   gate          Gate?    @relation(fields: [gateId], references: [id])
   
+  suggestions   AiSuggestion[]
+  milestones    FlightMilestone[]
+  auditLogs     AiAuditLog[]
   passengers    Passenger[]
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
 model Gate {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  terminal  String
-  status    String   @default("OPEN") // OPEN, CLOSED, MAINTENANCE, EMERGENCY_ONLY
+  id              String         @id @default(uuid())
+  name            String         @unique
+  terminal        String         @default("T1")
+  zone            String         @default("NORTH") // NORTH, SOUTH, INTERNATIONAL
+  type            GateType       @default(DOMESTIC)
+  size            GateSize       @default(MEDIUM)
+  status          GateStatus     @default(OPEN)
+  isVip           Boolean        @default(false)
   
-  flights   Flight[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Spatial Data for Simulation
+  mapX            Float          @default(0)
+  mapY            Float          @default(0)
+  taxiTime        Int            @default(5) // Minutes from runway
+  adjacentGateIds String[]       @default([]) // Gates that might conflict physically
+  
+  flights         Flight[]
+  
+  // Two-way relations for re-evaluations
+  newSuggestions AiSuggestion[] @relation("NewGate")
+  oldSuggestions AiSuggestion[] @relation("OldGate")
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model AiSuggestion {
+  id            String   @id @default(uuid())
+  flightId      String
+  flight        Flight   @relation(fields: [flightId], references: [id])
+  
+  oldGateId     String?
+  oldGate       Gate?    @relation("OldGate", fields: [oldGateId], references: [id])
+  
+  newGateId     String
+  newGate       Gate     @relation("NewGate", fields: [newGateId], references: [id])
+  
+  reason        String
+  status        SuggestionStatus @default(PENDING)
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AiAuditLog {
+  id              String        @id @default(uuid())
+  flightId        String
+  flight          Flight        @relation(fields: [flightId], references: [id])
+  action          String        // OPTIMIZATION, CONFLICT_DETECTED, EMERGENCY_CASCADE
+  message         String
+  severity        AuditSeverity @default(INFO)
+  confidenceScore Float         @default(1.0)
+  createdAt       DateTime      @default(now())
+}
+
+model FlightMilestone {
+  id          String   @id @default(uuid())
+  flightId    String
+  flight      Flight   @relation(fields: [flightId], references: [id])
+  state       String   // The state reached (kept flexible as string)
+  order       Int      @default(0)
+  triggeredBy String   @default("SYSTEM") // AI, ADMIN, GROUND_STAFF
+  timestamp   DateTime @default(now())
 }
 
 model Passenger {

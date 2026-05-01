@@ -10,6 +10,6 @@ export default defineConfig({
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    url: "file:C:/Users/USER/.gemini/antigravity/scratch/skywow-app/dev.db",
+    url: process.env.DATABASE_URL,
   },
 });
