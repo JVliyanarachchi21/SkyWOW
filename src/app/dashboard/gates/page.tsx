@@ -18,6 +18,7 @@ export default function GateMaps() {
   const [gates, setGates] = useState([]);
   const [selectedGate, setSelectedGate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [heatmapMode, setHeatmapMode] = useState(false);
 
   const fetchGates = async () => {
     try {
@@ -25,7 +26,6 @@ export default function GateMaps() {
       const data = await res.json();
       setGates(data);
       if (!selectedGate && data.length > 0) {
-        // Find a "Busy" gate or emergency gate if exists for initial view
         const active = data.find((g: any) => g.status === 'EMERGENCY_ONLY') || data.find((g: any) => g.flights.length > 0) || data[0];
         setSelectedGate(active);
       }
@@ -42,6 +42,16 @@ export default function GateMaps() {
     return () => clearInterval(interval);
   }, []);
 
+  // Calculate pressure score for a gate (0-100)
+  const getPressureScore = (gate: any) => {
+    let score = 0;
+    if (gate.flights.length > 0) score += 30;
+    if (gate.status === 'EMERGENCY_ONLY') score += 70;
+    if (gate.flights.some((f: any) => f.priority === 'EMERGENCY')) score += 50;
+    if (gate.flights.some((f: any) => f.priority === 'VIP')) score += 20;
+    return Math.min(score, 100);
+  };
+
   return (
     <div className="space-y-8 pb-10">
       {/* Header */}
@@ -53,15 +63,33 @@ export default function GateMaps() {
           </h1>
           <p className="text-slate-500 text-xs font-mono uppercase tracking-[0.2em] mt-1">Spatial Resource Management • Terminal 1-Alpha</p>
         </div>
-        <div className="flex gap-4">
-           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
-              <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" /> OPEN
-           </div>
-           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
-              <div className="w-2 h-2 rounded-full bg-blue-500" /> OCCUPIED
-           </div>
-           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> EMERGENCY
+        
+        <div className="flex flex-wrap items-center gap-6">
+           {/* Heatmap Toggle */}
+           <button 
+            onClick={() => setHeatmapMode(!heatmapMode)}
+            className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all duration-500 ${
+              heatmapMode 
+                ? "bg-amber-500/10 border-amber-500 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]" 
+                : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+            }`}
+           >
+              <Zap className={`w-4 h-4 ${heatmapMode ? "animate-pulse" : ""}`} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Heatmap: {heatmapMode ? "ON" : "OFF"}</span>
+           </button>
+
+           <div className="h-10 w-px bg-white/5 hidden md:block" />
+
+           <div className="flex gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
+                 <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" /> OPEN
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
+                 <div className="w-2 h-2 rounded-full bg-blue-500" /> OCCUPIED
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
+                 <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> EMERGENCY
+              </div>
            </div>
         </div>
       </header>
@@ -101,35 +129,53 @@ export default function GateMaps() {
                 const isEmergency = gate.status === 'EMERGENCY_ONLY';
                 const isOccupied = gate.flights.length > 0;
                 const isSelected = selectedGate?.id === gate.id;
+                const pressure = getPressureScore(gate);
 
                 return (
                   <g key={gate.id} className="cursor-pointer" onClick={() => setSelectedGate(gate)}>
+                    {/* Heatmap Aura */}
+                    <AnimatePresence>
+                      {heatmapMode && (
+                        <motion.circle 
+                          cx={x} cy={y} 
+                          r={pressure > 50 ? "80" : "50"}
+                          fill={pressure > 70 ? "rgba(239,68,68,0.2)" : pressure > 30 ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.1)"}
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: [1, 1.1, 1], opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ repeat: Infinity, duration: 3 }}
+                        />
+                      )}
+                    </AnimatePresence>
+
                     {/* Connection Line */}
                     <motion.line 
                       x1={x} y1={y} x2={x} y2={300}
-                      stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="1"
+                      stroke={heatmapMode ? (pressure > 70 ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.1)") : "rgba(255,255,255,0.1)"}
+                      strokeWidth={heatmapMode && pressure > 70 ? "3" : "1"}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                     />
 
-                    {/* Node Aura */}
-                    <AnimatePresence>
-                       {(isEmergency || isSelected) && (
-                         <motion.circle 
-                           cx={x} cy={y} r="45"
-                           fill={isEmergency ? "rgba(239,68,68,0.1)" : "rgba(6,182,212,0.05)"}
-                           initial={{ scale: 0 }}
-                           animate={{ scale: [1, 1.2, 1] }}
-                           transition={{ repeat: Infinity, duration: 2 }}
-                         />
-                       )}
-                    </AnimatePresence>
+                    {/* Node Aura (Standard) */}
+                    {!heatmapMode && (
+                      <AnimatePresence>
+                        {(isEmergency || isSelected) && (
+                          <motion.circle 
+                            cx={x} cy={y} r="45"
+                            fill={isEmergency ? "rgba(239,68,68,0.1)" : "rgba(6,182,212,0.05)"}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    )}
 
                     {/* Main Gate Node */}
                     <motion.circle 
                       cx={x} cy={y} r="30"
-                      fill={isEmergency ? "#ef4444" : isOccupied ? "#3b82f6" : "#1e293b"}
+                      fill={heatmapMode ? (pressure > 70 ? "#ef4444" : pressure > 30 ? "#f59e0b" : "#3b82f6") : (isEmergency ? "#ef4444" : isOccupied ? "#3b82f6" : "#1e293b")}
                       stroke={isSelected ? "#22d3ee" : "rgba(255,255,255,0.1)"}
                       strokeWidth={isSelected ? "3" : "1"}
                       whileHover={{ scale: 1.1 }}
