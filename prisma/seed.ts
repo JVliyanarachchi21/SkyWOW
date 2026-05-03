@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { prisma } from '../src/lib/prisma';
+import bcrypt from 'bcryptjs';
 import { 
   FlightStatus, 
   PriorityLevel, 
@@ -72,18 +74,24 @@ async function main() {
       });
     }
 
-    // 3. Create Staff
-    const staffData = [
-      { name: 'Janithi Liyanaarachchi', role: 'ADMIN', email: 'janithi@skywow.com' },
-      { name: 'Alex Thompson', role: 'GROUND_CREW', email: 'alex@skywow.com' },
-      { name: 'Commander Sky', role: 'PILOT', email: 'pilot@skywow.com' },
+    // 3. Create Users (Staff)
+    const hashedPassword = await bcrypt.hash('skywow123', 10);
+
+    const userData = [
+      { name: 'Janithi Liyanaarachchi', role: 'ADMIN', email: 'janithi@skywow.com', password: hashedPassword },
+      { name: 'Alex Thompson', role: 'GROUND_CREW', email: 'alex@skywow.com', password: hashedPassword },
+      { name: 'Commander Sky', role: 'PILOT', email: 'pilot@skywow.com', password: hashedPassword },
     ];
 
-    for (const s of staffData) {
-      await prisma.staff.upsert({
-        where: { email: s.email },
-        update: {},
-        create: s,
+    for (const u of userData) {
+      await prisma.user.upsert({
+        where: { email: u.email },
+        update: {
+          password: u.password,
+          name: u.name,
+          role: u.role as any
+        },
+        create: u,
       });
     }
 
