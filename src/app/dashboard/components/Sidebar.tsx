@@ -81,10 +81,10 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-white/5 space-y-1">
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+        <Link href="/dashboard/config" className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
           <Settings className="w-5 h-5" />
           <span className="font-medium">System Config</span>
-        </button>
+        </Link>
         <button 
           onClick={() => {
              import('next-auth/react').then(m => m.signOut({ callbackUrl: '/login' }));
