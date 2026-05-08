@@ -6,6 +6,14 @@ export async function GET() {
     const flights = await prisma.flight.findMany({
       include: {
         gate: true,
+        milestones: {
+          orderBy: { timestamp: 'desc' },
+          take: 5
+        },
+        auditLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
       },
       orderBy: {
         departureTime: 'asc',
