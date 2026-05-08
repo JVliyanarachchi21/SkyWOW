@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { Cpu, CheckCircle2, AlertCircle, ArrowRight, Clock, Zap, History, ShieldCheck } from "lucide-react";
 
 interface Suggestion {
@@ -24,10 +25,13 @@ interface Suggestion {
 }
 
 export default function AiAdvisoryPanel() {
+  const { data: session } = useSession();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [lastScan, setLastScan] = useState<string>("Initializing...");
+  
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   const fetchSuggestions = async () => {
     try {
@@ -59,9 +63,9 @@ export default function AiAdvisoryPanel() {
 
   const approveSuggestion = async (id: string) => {
     try {
-      await fetch("/api/ai/suggestions", {
+      await fetch("/api/ai/suggestions/approve", {
         method: "POST",
-        body: JSON.stringify({ suggestionId: id, action: "APPROVE" }),
+        body: JSON.stringify({ suggestionId: id }),
       });
       fetchSuggestions();
     } catch (error) {
@@ -97,9 +101,11 @@ export default function AiAdvisoryPanel() {
               AI Dispatcher
             </h2>
             <div className={`text-[9px] px-3 py-1 rounded-full font-mono uppercase tracking-widest transition-all duration-500 ${
-              suggestions.length > 0 ? "bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              isEvaluating ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 animate-pulse" :
+              suggestions.length > 0 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]" : 
+              "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
             }`}>
-              {isEvaluating ? "SCANNING..." : suggestions.length > 0 ? "ACTION REQUIRED" : "STABLE"}
+              {isEvaluating ? "SCANNING CAUSALITY..." : suggestions.length > 1 ? "CASCADE REQUIRED" : suggestions.length > 0 ? "OPTIMAL SHIFT" : "SYSTEM STABLE"}
             </div>
           </div>
           <div className="flex items-center gap-4 text-[9px] font-mono text-slate-500 uppercase tracking-widest">
@@ -126,26 +132,47 @@ export default function AiAdvisoryPanel() {
                 <div className="flex flex-col gap-3 mt-8">
                   <button 
                     onClick={triggerOptimize}
-                    className="w-full py-3 bg-white/5 border border-white/10 text-[10px] text-purple-400 hover:text-purple-300 font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-purple-500/10 rounded-xl"
+                    disabled={!isAdmin || isEvaluating}
+                    className={`w-full py-3 border text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all rounded-xl ${
+                      isAdmin 
+                        ? "bg-white/5 border-white/10 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10" 
+                        : "bg-white/[0.02] border-white/5 text-slate-600 cursor-not-allowed opacity-50"
+                    }`}
                   >
-                    <Zap className="w-3.5 h-3.5" /> Re-Scan Brain
+                    <Zap className="w-3.5 h-3.5" /> {isAdmin ? "Re-Scan Brain" : "AI Loop: Active"}
                   </button>
-                  <div className="relative group/crisis">
-                    <button 
-                      onClick={async () => {
-                        if (confirm("WARNING: This will simulate a critical system failure. Continue?")) {
-                          await fetch("/api/ai/simulate-conflict", { method: "POST" });
-                          await triggerOptimize();
-                        }
-                      }}
-                      className="w-full py-3 bg-red-500/5 border border-red-500/10 text-[10px] text-red-500/60 hover:text-red-500 font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-red-500/10 rounded-xl"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5" /> Inject Crisis
-                    </button>
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-red-950 border border-red-500/30 text-red-400 text-[8px] rounded-lg opacity-0 group-hover/crisis:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest font-mono whitespace-nowrap z-50 shadow-xl">
-                       Simulation: Escalates SW911 to Emergency
+                  
+                  {isAdmin && (
+                    <div className="relative group/crisis">
+                      <button 
+                        onClick={async () => {
+                          setLoading(true);
+                          try {
+                            await fetch("/api/ai/simulate-conflict", { method: "POST" });
+                            await triggerOptimize();
+                          } catch (e) {
+                            console.error(e);
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        className={`w-full py-3 border text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all rounded-xl ${
+                          loading 
+                            ? "bg-red-500/20 border-red-500/30 text-red-400 animate-pulse" 
+                            : "bg-red-500/5 border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10"
+                        }`}
+                      >
+                        <AlertCircle className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> 
+                        {loading ? "Transmitting..." : "Inject Crisis"}
+                      </button>
+                      {!loading && (
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-red-950 border border-red-500/30 text-red-400 text-[8px] rounded-lg opacity-0 group-hover/crisis:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest font-mono whitespace-nowrap z-50 shadow-xl">
+                          Simulation: Forced Gate Conflict
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             ) : (
@@ -166,13 +193,17 @@ export default function AiAdvisoryPanel() {
                System Recommendation
             </div>
             <button 
-              disabled={loading}
+              disabled={loading || !isAdmin}
               onClick={() => suggestions.forEach(s => approveSuggestion(s.id))}
-              className="w-full py-5 bg-purple-500 text-slate-950 font-black rounded-2xl hover:scale-[1.02] transition-all active:scale-95 shadow-xl shadow-purple-500/20 uppercase tracking-tight flex items-center justify-center gap-3 group overflow-hidden relative"
+              className={`w-full py-5 font-black rounded-2xl transition-all shadow-xl uppercase tracking-tight flex items-center justify-center gap-3 group overflow-hidden relative ${
+                isAdmin 
+                  ? "bg-purple-500 text-slate-950 hover:scale-[1.02] active:scale-95 shadow-purple-500/20" 
+                  : "bg-white/5 text-slate-600 border border-white/10 cursor-not-allowed opacity-50"
+              }`}
             >
-              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-[-20deg]" />
-              Commit AI Decisions
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+              {isAdmin && <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-[-20deg]" />}
+              {isAdmin ? "Commit AI Decisions" : "Awaiting Authorization"}
+              <ArrowRight className={`w-5 h-5 ${isAdmin ? "group-hover:translate-x-2 transition-transform" : ""}`} />
             </button>
           </div>
         )}
@@ -196,64 +227,68 @@ function SuggestionCard({ suggestion, onApprove }: { suggestion: Suggestion, onA
     return () => clearInterval(timer);
   }, [suggestion.expiresAt]);
 
+  const targetGate = suggestion.newGateName || suggestion.newGate?.name || "??";
+
   return (
     <motion.div 
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="p-5 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-all group relative overflow-hidden shadow-xl"
+      exit={{ opacity: 0, scale: 0.98 }}
+      className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden shadow-lg mb-3"
     >
-      <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
-         <ShieldCheck className="w-4 h-4 text-purple-400" />
-      </div>
-
-      {/* Timer Progress Bar */}
-      <motion.div 
-        initial={{ width: "100%" }}
-        animate={{ width: "0%" }}
-        transition={{ duration: timeLeft, ease: "linear" }}
-        className="absolute bottom-0 left-0 h-1 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-      />
-
-      <div className="flex flex-col gap-4 relative z-10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center font-black text-xl text-purple-400 italic">
+      <div className="flex items-center justify-between gap-6 relative z-10">
+        
+        {/* Left: Flight Context */}
+        <div className="flex items-center gap-4 min-w-[140px]">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center font-black text-sm text-purple-400 italic">
             {suggestion.flight.number}
           </div>
-          <div>
-            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-1">Causality: Impact Displacment</p>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-slate-400 line-through decoration-red-500/50">
-                {suggestion.flight.gate?.name || "UNASSIGNED"}
-              </span>
-              <ArrowRight className="w-4 h-4 text-purple-500" />
-              <span className="text-sm font-black text-white px-2 py-1 bg-purple-500/10 rounded-lg">
-                {suggestion.newGate.name}
-              </span>
-            </div>
+          <div className="flex flex-col">
+            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest mb-0.5">Status</span>
+            <span className="text-[10px] font-bold text-slate-400 line-through decoration-red-500/50">
+              {suggestion.flight.gate?.name || "UNASSIGNED"}
+            </span>
           </div>
         </div>
-        
-        <div className="bg-white/[0.02] rounded-xl p-3 border border-white/5">
-           <p className="text-[10px] text-slate-400 leading-relaxed italic">
-              "{suggestion.reason}"
-           </p>
+
+        {/* Center: Tactical Shift */}
+        <div className="flex-1 flex items-center gap-3 justify-center">
+          <ArrowRight className="w-3.5 h-3.5 text-purple-500/50" />
+          <div className="px-3 py-1.5 bg-purple-500/10 rounded-lg border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+             <span className="text-xs font-black text-white tracking-tighter uppercase">{targetGate}</span>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 mt-2">
-           <div className={`flex items-center gap-2 text-xs font-mono font-bold ${timeLeft <= 3 ? "text-red-500 animate-pulse" : "text-purple-400"}`}>
-             <Clock className="w-4 h-4" />
+        {/* Right: Action Zone */}
+        <div className="flex items-center gap-4">
+           <div className={`text-[10px] font-mono font-bold w-10 text-center ${timeLeft <= 3 ? "text-red-500 animate-pulse" : "text-purple-500"}`}>
              00:{timeLeft.toString().padStart(2, '0')}
            </div>
            <button 
              onClick={onApprove}
-             className="flex-1 py-3 bg-white/5 border border-white/10 hover:bg-purple-500 hover:text-slate-950 text-white text-[10px] font-black rounded-xl transition-all uppercase tracking-widest shadow-lg"
+             className="px-5 py-2.5 bg-purple-500 text-slate-950 text-[10px] font-black rounded-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-purple-500/20"
            >
-             Execute Dispatch
+             Execute
            </button>
         </div>
+
       </div>
+
+      {/* Detail Overlay on Hover */}
+      <div className="mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden">
+         <p className="text-[9px] text-slate-500 leading-none italic truncate">
+            {suggestion.reason}
+         </p>
+      </div>
+
+      {/* Timer Bar */}
+      <motion.div 
+        initial={{ width: "100%" }}
+        animate={{ width: "0%" }}
+        transition={{ duration: timeLeft, ease: "linear" }}
+        className="absolute bottom-0 left-0 h-[1px] bg-purple-500/50"
+      />
     </motion.div>
   );
 }
