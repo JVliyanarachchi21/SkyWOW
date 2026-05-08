@@ -11,6 +11,11 @@ export async function GET() {
             departureTime: 'asc',
           },
         },
+        newSuggestions: {
+          where: {
+            status: "PENDING"
+          }
+        }
       },
       orderBy: {
         name: 'asc',
