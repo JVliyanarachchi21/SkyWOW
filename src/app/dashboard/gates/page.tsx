@@ -11,28 +11,56 @@ import {
   Zap,
   Navigation,
   Box,
-  Compass
+  Compass,
+  Cpu,
+  Activity
 } from "lucide-react";
 
 export default function GateMaps() {
-  const [gates, setGates] = useState([]);
+  const [gates, setGates] = useState<any[]>([]);
   const [selectedGate, setSelectedGate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [heatmapMode, setHeatmapMode] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [fetchingLogs, setFetchingLogs] = useState(false);
 
   const fetchGates = async () => {
     try {
       const res = await fetch("/api/gates");
       const data = await res.json();
-      setGates(data);
-      if (!selectedGate && data.length > 0) {
-        const active = data.find((g: any) => g.status === 'EMERGENCY_ONLY') || data.find((g: any) => g.flights.length > 0) || data[0];
-        setSelectedGate(active);
+      if (Array.isArray(data)) {
+        setGates(data);
+        if (!selectedGate && data.length > 0) {
+          const active = data.find((g: any) => g.status === 'EMERGENCY_ONLY') || data.find((g: any) => g.flights.length > 0) || data[0];
+          setSelectedGate(active);
+        }
+      } else {
+        setGates([]);
       }
     } catch (error) {
       console.error("Failed to fetch gates:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLogs = async () => {
+    if (!selectedGate) return;
+    setFetchingLogs(true);
+    setShowLogs(true);
+    try {
+      // Find logs related to the flight at the gate, or recent logs if empty
+      const url = selectedGate.flights.length > 0 
+        ? `/api/ai/logs?flightId=${selectedGate.flights[0].id}`
+        : `/api/ai/logs`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setLogs(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+    } finally {
+      setFetchingLogs(false);
     }
   };
 
@@ -89,6 +117,9 @@ export default function GateMaps() {
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-slate-400">
                  <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> EMERGENCY
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-[10px] font-mono text-purple-400">
+                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" /> AI GHOST
               </div>
            </div>
         </div>
@@ -172,15 +203,52 @@ export default function GateMaps() {
                       </AnimatePresence>
                     )}
 
+                    {/* AI Ghosting Node (Predictive Future) */}
+                    {gate.newSuggestions?.length > 0 && (
+                      <g>
+                        <motion.circle 
+                          cx={x} cy={y} r="35"
+                          fill="transparent"
+                          stroke="#a855f7"
+                          strokeWidth="2"
+                          strokeDasharray="4 4"
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                          className="opacity-60"
+                        />
+                        <motion.circle 
+                          cx={x} cy={y} r="32"
+                          fill="rgba(168,85,247,0.1)"
+                          animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.6, 0.3] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                        />
+                        <foreignObject x={x-10} y={y-45} width="20" height="20">
+                           <Cpu className="w-4 h-4 text-purple-400 animate-pulse" />
+                        </foreignObject>
+                      </g>
+                    )}
+
                     {/* Main Gate Node */}
                     <motion.circle 
                       cx={x} cy={y} r="30"
                       fill={heatmapMode ? (pressure > 70 ? "#ef4444" : pressure > 30 ? "#f59e0b" : "#3b82f6") : (isEmergency ? "#ef4444" : isOccupied ? "#3b82f6" : "#1e293b")}
-                      stroke={isSelected ? "#22d3ee" : "rgba(255,255,255,0.1)"}
-                      strokeWidth={isSelected ? "3" : "1"}
+                      stroke={isSelected ? "#22d3ee" : gate.newSuggestions?.length > 0 ? "#a855f7" : "rgba(255,255,255,0.1)"}
+                      strokeWidth={isSelected ? "3" : gate.newSuggestions?.length > 0 ? "2" : "1"}
                       whileHover={{ scale: 1.1 }}
                       className="transition-colors duration-500"
                     />
+
+                    {/* Ground Progress Ring */}
+                    {isOccupied && gate.flights[0].groundState && (
+                      <motion.circle 
+                        cx={x} cy={y} r="26"
+                        fill="transparent"
+                        stroke={gate.flights[0].groundState === 'COMPLETE' ? "#10b981" : "#3b82f6"}
+                        strokeWidth="3"
+                        strokeDasharray={gate.flights[0].groundState === 'COMPLETE' ? "100 0" : "40 60"}
+                        className="opacity-40"
+                      />
+                    )}
 
                     {/* Gate Label */}
                     <text 
@@ -274,6 +342,17 @@ export default function GateMaps() {
                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                            <span className="text-[10px] font-mono text-blue-300 uppercase italic">Status: {selectedGate.flights[0].status}</span>
                         </div>
+
+                         {selectedGate.newSuggestions?.length > 0 && (
+                            <div className="mt-4 p-4 bg-purple-500/20 border border-purple-500/30 rounded-2xl animate-pulse">
+                               <div className="flex items-center gap-2 text-purple-400 text-[10px] font-black uppercase mb-2">
+                                  <Cpu className="w-3.5 h-3.5" /> AI Predictive Swap
+                               </div>
+                               <p className="text-[9px] text-purple-200/70 italic leading-relaxed">
+                                  "{selectedGate.newSuggestions[0].reason}"
+                                </p>
+                            </div>
+                         )}
                      </div>
                    ) : (
                      <div className="p-8 border border-dashed border-white/10 rounded-3xl text-center">
@@ -284,7 +363,10 @@ export default function GateMaps() {
                 </div>
 
                 <div className="mt-auto pt-8 border-t border-white/5">
-                   <button className="w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 group">
+                   <button 
+                    onClick={fetchLogs}
+                    className="w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 group"
+                   >
                       <Info className="w-4 h-4 text-cyan-500" />
                       View Full Gate Logs
                    </button>
@@ -299,6 +381,77 @@ export default function GateMaps() {
         </aside>
 
       </div>
+
+      {/* Logs Modal */}
+      <AnimatePresence>
+        {showLogs && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLogs(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[2.5rem] overflow-hidden relative z-10 shadow-2xl flex flex-col max-h-[80vh]"
+            >
+              <header className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                    <Activity className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white italic uppercase tracking-tighter">Tactical Gate Logs: {selectedGate?.name}</h3>
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Audit Trail • Real-Time Synchronization</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowLogs(false)}
+                  className="p-3 hover:bg-white/5 rounded-xl transition-colors text-slate-500 hover:text-white"
+                >
+                  <Zap className="w-5 h-5 rotate-45" />
+                </button>
+              </header>
+              <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar">
+                {fetchingLogs ? (
+                  <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Fetching data from core...</span>
+                  </div>
+                ) : logs.length > 0 ? (
+                  logs.map((log, i) => (
+                    <div key={i} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[8px] font-mono px-2 py-0.5 rounded border uppercase tracking-widest ${
+                          log.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-500 border-red-500/30' :
+                          log.severity === 'WARNING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                        }`}>
+                          {log.flight?.number && <span className="mr-2 opacity-50">[{log.flight.number}]</span>}
+                          {log.action}
+                        </span>
+                        <span className="text-[8px] font-mono text-slate-600">
+                          {new Date(log.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 italic">"{log.message}"</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20">
+                    <Info className="w-12 h-12 text-slate-700 mx-auto mb-4 opacity-30" />
+                    <p className="text-xs text-slate-500 font-medium italic">No recent tactical events recorded for this node.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
