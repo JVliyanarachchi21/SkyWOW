@@ -12,117 +12,144 @@ export async function POST() {
   try {
     const now = new Date();
 
-    // 1. Fetch current state
-    const flights = await prisma.flight.findMany({
-      include: { gate: true },
-      where: {
-        status: {
-          notIn: [FlightStatus.DEPARTED, FlightStatus.LANDED]
+    // 1. Fetch current state with full context
+    const [flights, gates] = await Promise.all([
+      prisma.flight.findMany({
+        include: { gate: true },
+        where: {
+          OR: [
+            { status: { notIn: [FlightStatus.DEPARTED, FlightStatus.LANDED] } },
+            { status: FlightStatus.LANDED, gateId: null }
+          ]
         }
-      }
-    });
+      }),
+      prisma.gate.findMany()
+    ]);
 
-    const gates = await prisma.gate.findMany();
-
-    // Clear old pending suggestions to refresh the brain
+    // Clear old pending suggestions
     await prisma.aiSuggestion.deleteMany({
       where: { status: SuggestionStatus.PENDING }
     });
 
-    const suggestions = [];
-    const auditLogs = [];
-    const displacedGateIds = new Set<string>();
+    const suggestions: any[] = [];
+    const auditLogs: any[] = [];
+    const lockedGateIds = new Set<string>();
 
-    // 2. Intelligence Logic: Emergency & Priority Re-Evaluation
-    const emergencies = flights.filter(f => f.isEmergency || f.priority === PriorityLevel.EMERGENCY);
-    
-    for (const flight of emergencies) {
-      // Find the "Ideal" gate: Lowest taxiTime + Capability Match
-      const availableGates = gates.filter(g => g.status === GateStatus.OPEN || g.status === GateStatus.EMERGENCY_ONLY);
-      
-      const idealGate = availableGates
-        .sort((a, b) => a.taxiTime - b.taxiTime)[0] || gates[0];
-      
-      if (idealGate && flight.gateId !== idealGate.id) {
-        // CONFLICT DETECTION
-        const occupant = flights.find(f => f.gateId === idealGate.id);
-        
-        if (occupant && occupant.id !== flight.id) {
-          // RIPPLE EFFECT: Displace the occupant
-          const alternativeGate = gates.find(g => 
-            g.id !== idealGate.id && 
-            !flights.some(f => f.gateId === g.id) &&
-            !displacedGateIds.has(g.id)
-          );
+    // Sort flights by priority: EMERGENCY > VIP > NORMAL
+    const sortedFlights = [...flights].sort((a, b) => {
+      const pA = a.isEmergency ? 3 : a.priority === PriorityLevel.VIP ? 2 : 1;
+      const pB = b.isEmergency ? 3 : b.priority === PriorityLevel.VIP ? 2 : 1;
+      return pB - pA;
+    });
 
-          if (alternativeGate) {
-            suggestions.push({
-              flightId: occupant.id,
-              oldGateId: occupant.gateId,
-              newGateId: alternativeGate.id,
-              reason: `EMERGENCY OVERRIDE: Displaced by ${flight.number}`,
-              status: SuggestionStatus.PENDING,
-              expiresAt: new Date(now.getTime() + 10000)
-            });
-            
-            displacedGateIds.add(alternativeGate.id);
+    // 2. The Recursive Cascade Engine
+    for (const flight of sortedFlights) {
+      if (flight.isEmergency || flight.priority === PriorityLevel.VIP) {
+        // High priority flights demand optimal gates
+        const idealGate = gates
+          .filter(g => g.status === GateStatus.OPEN || g.status === GateStatus.EMERGENCY_ONLY)
+          .sort((a, b) => a.taxiTime - b.taxiTime)[0];
 
-            auditLogs.push({
-              flightId: occupant.id,
-              action: "EMERGENCY_CASCADE",
-              message: `Moving ${occupant.number} to ${alternativeGate.name} to clear path for Emergency ${flight.number}.`,
-              severity: AuditSeverity.WARNING,
-              confidenceScore: 0.95
-            });
+        if (idealGate && flight.gateId !== idealGate.id && !lockedGateIds.has(idealGate.id)) {
+          const occupant = sortedFlights.find(f => f.gateId === idealGate.id && f.id !== flight.id);
+
+          if (occupant) {
+            // RIPPLE EFFECT: Displace the occupant to the next best available gate
+            const nextBestGate = gates.find(g => 
+              g.id !== idealGate.id && 
+              g.status === GateStatus.OPEN &&
+              !sortedFlights.some(f => f.gateId === g.id) &&
+              !lockedGateIds.has(g.id)
+            );
+
+            if (nextBestGate) {
+              suggestions.push({
+                flightId: occupant.id,
+                oldGateId: occupant.gateId,
+                newGateId: nextBestGate.id,
+                reason: `TACTICAL CASCADE: Displaced by Priority Flight ${flight.number} to Gate ${idealGate.name}.`,
+                status: SuggestionStatus.PENDING,
+                expiresAt: new Date(now.getTime() + 15000)
+              });
+              
+              lockedGateIds.add(nextBestGate.id);
+              
+              auditLogs.push({
+                flightId: occupant.id,
+                action: "EMERGENCY_CASCADE",
+                message: `Ripple effect: Moving ${occupant.number} to ${nextBestGate.name} to preserve tactical priority for ${flight.number}.`,
+                severity: AuditSeverity.WARNING,
+                confidenceScore: 0.98
+              });
+            }
           }
+
+          // Assign the Priority Flight
+          suggestions.push({
+            flightId: flight.id,
+            oldGateId: flight.gateId,
+            newGateId: idealGate.id,
+            reason: `OPTIMIZATION: Assigning optimal Gate ${idealGate.name} based on ${flight.isEmergency ? 'EMERGENCY' : 'VIP'} status.`,
+            status: SuggestionStatus.PENDING,
+            expiresAt: new Date(now.getTime() + 15000)
+          });
+
+          lockedGateIds.add(idealGate.id);
+
+          auditLogs.push({
+            flightId: flight.id,
+            action: "OPTIMIZATION",
+            message: `Locked ${flight.number} to Gate ${idealGate.name}. Taxi-time: ${idealGate.taxiTime}m.`,
+            severity: flight.isEmergency ? AuditSeverity.CRITICAL : AuditSeverity.INFO,
+            confidenceScore: 1.0
+          });
+        } else if (flight.gateId) {
+          lockedGateIds.add(flight.gateId);
         }
+      } else if (flight.gateId) {
+        // Standard flights keep their gates if not displaced
+        lockedGateIds.add(flight.gateId);
+      } else {
+        // UNASSIGNED FLIGHTS: Find them a home
+        const availableGate = gates.find(g => 
+          g.status === GateStatus.OPEN && 
+          !sortedFlights.some(f => f.gateId === g.id) &&
+          !lockedGateIds.has(g.id) &&
+          !suggestions.some(s => s.newGateId === g.id)
+        );
 
-        // Assign the Emergency Flight
-        suggestions.push({
-          flightId: flight.id,
-          oldGateId: flight.gateId,
-          newGateId: idealGate.id,
-          reason: "CRITICAL: Emergency priority gate assignment required.",
-          status: SuggestionStatus.PENDING,
-          expiresAt: new Date(now.getTime() + 10000)
-        });
-
-        auditLogs.push({
-          flightId: flight.id,
-          action: "OPTIMIZATION",
-          message: `Prioritizing ${flight.number} for Gate ${idealGate.name} due to EMERGENCY status.`,
-          severity: AuditSeverity.CRITICAL,
-          confidenceScore: 1.0
-        });
-
-        // Update last optimized timestamp
-        await prisma.flight.update({
-          where: { id: flight.id },
-          data: { lastOptimizedAt: now }
-        });
+        if (availableGate) {
+          suggestions.push({
+            flightId: flight.id,
+            oldGateId: null,
+            newGateId: availableGate.id,
+            reason: `AUTO-ASSIGN: Aligning unassigned flight ${flight.number} to Gate ${availableGate.name}.`,
+            status: SuggestionStatus.PENDING,
+            expiresAt: new Date(now.getTime() + 15000)
+          });
+          lockedGateIds.add(availableGate.id);
+        }
       }
     }
 
-    // 3. Save Decisions to DB
+    // 3. Save and Respond
     if (suggestions.length > 0) {
-      await prisma.aiSuggestion.createMany({
-        data: suggestions
-      });
-      
-      await prisma.aiAuditLog.createMany({
-        data: auditLogs
-      });
+      // Use individual creates to ensure proper lifecycle handling (uuid, updatedAt)
+      await Promise.all([
+        ...suggestions.map(s => prisma.aiSuggestion.create({ data: s })),
+        ...auditLogs.map(a => prisma.aiAuditLog.create({ data: a }))
+      ]);
     }
 
     return NextResponse.json({
       status: "SUCCESS",
-      message: suggestions.length > 0 ? "RE-EVALUATING..." : "STABLE",
+      message: suggestions.length > 0 ? "CASCADE TRIGGERED" : "OPTIMAL",
       suggestions,
-      timestamp: now.toISOString()
+      count: suggestions.length
     });
 
   } catch (error) {
     console.error("AI ENGINE ERROR:", error);
-    return NextResponse.json({ error: "Optimization Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Cascade Failed" }, { status: 500 });
   }
 }
