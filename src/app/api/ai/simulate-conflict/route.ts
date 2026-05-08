@@ -35,6 +35,12 @@ export async function POST() {
       where: { id: blocker.id },
       data: { gateId: idealGate.id, status: FlightStatus.ASSIGNED }
     });
+    
+    // Reset victim gate to null to force a new tactical assignment
+    await prisma.flight.update({
+      where: { id: victim.id },
+      data: { gateId: null }
+    });
 
     // 4. Set the Victim to EMERGENCY
     await prisma.flight.update({
